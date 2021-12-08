@@ -8,10 +8,11 @@ Created on Thu Nov 18 12:01:26 2021
 
 import pandas as pd
 import numpy as np
+
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
-
+import random
 from numpy import unique
 from numpy import where
 from sklearn.cluster import KMeans
@@ -35,10 +36,15 @@ no_outliers_students = []
 outlier_districts = []
 
 for i,r in df.iterrows():
+  #validation  
+  '''  
+  if random.random() > 0.5:
+      continue
+  '''
   funding_per.append(int(r['Cost'])/r['Students'])
   grad_rate.append(r['Graduation Rate'])
   students.append(r['Students'])
-  if r['Graduation Rate'] > 20 and int(r['Cost'])/r['Students'] < 1000000:
+  if r['Graduation Rate'] > 20:
     no_outliers_funding_per.append(int(r['Cost'])/r['Students'])
     no_outliers_grad_rate.append(r['Graduation Rate'])
     no_outliers_students.append(r['Students'])
@@ -57,10 +63,10 @@ for j in range(0,len(stu)):
 '''
 edit here to change the axis and questions being asked
 '''
-x_var = stu
-x_var_name = 'Number of Students'
-y_var = funding
-y_var_name = 'Funding per Student'
+x_var = funding
+x_var_name = 'Funding per Student ($)'
+y_var = grad
+y_var_name = 'Graduation Rate (%)'
  
 #finding the linear regression
 x_var = x_var.reshape(-1,1)
@@ -73,11 +79,12 @@ x = np.linspace(0, xmax, 1001)
 y = np.zeros(1001)
 for j in range(0, 1001):
     y[j] = model.coef_*x[j] +model.intercept_
-
+fig, ax=plt.subplots()
 plt.plot(x_var,y_var,'ro')
 plt.xlabel(x_var_name)
 plt.ylabel(y_var_name)
-plt.title('Polynomial Regression')
+plt.setp(ax.get_xticklabels(), rotation = 30, horizontalalignment = 'right')
+plt.title('Question 1 Polynomial Regression')
 
 #finding polynomial regression
 x = x.reshape(-1,1)
@@ -86,7 +93,8 @@ x_poly = poly.fit_transform(x)
 poly.fit(x_poly,y)
 lin2 = LinearRegression()
 lin2.fit(x_poly, y)
-plt.plot(x, lin2.predict(poly.fit_transform(x)), color = 'red')
+#r_sq = lin2.score(x,y)
+plt.plot(x, lin2.predict(poly.fit_transform(x)), color = 'black')
 plt.show()
 
 
@@ -103,6 +111,7 @@ model.fit(cluster_data)
 yhat = model.predict(cluster_data)
 # retrieve unique clusters
 clusters = unique(yhat)
+fig, ax=plt.subplots()
 # create scatter plot for samples from each cluster
 for cluster in clusters:
 	# get row indexes for samples with this cluster
@@ -110,13 +119,16 @@ for cluster in clusters:
 	# create scatter of these samples
 	plt.scatter(cluster_data[row_ix, 0], cluster_data[row_ix, 1])
 # show the plot
-plt.title('K Means Cluster')
+plt.title('Question 1 K Means Cluster')
 plt.xlabel(x_var_name)
 plt.ylabel(y_var_name)
+plt.setp(ax.get_xticklabels(), rotation = 30, horizontalalignment = 'right')
 plt.show()
 
 
-
+#the K means cluster analysis was deemed best analysis
+#commenting out the rest in case want to compare at another time
+'''
 #cluster analysis 2
 #affinity propagation
 model = AffinityPropagation(damping=0.9)
@@ -207,3 +219,4 @@ plt.xlabel(x_var_name)
 plt.ylabel(y_var_name)
 plt.show()
 
+'''
