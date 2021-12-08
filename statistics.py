@@ -9,30 +9,66 @@ Original file is located at
 
 import numpy as np
 import pandas as pd
+import statistics
 
 df = pd.read_csv("district_data.csv")
-df_expense = pd.read_csv("district_expense_data.csv")
-df_school = pd.read_csv("district_school_data.csv")
 
-graduation_rate_mean = df['Graduation Rate'].mean()
-graduation_rate_med = df['Graduation Rate'].median()
-graduation_rate_std = df['Graduation Rate'].std()
-graduation_rate_max = df['Graduation Rate'].max()
-graduation_rate_min = df['Graduation Rate'].min()
+#Assemble lists of desired variables
+funding_per = []
+funding = []
+grad_rate = []
+students = []
+
+no_outliers_funding_per = []
+no_outliers_funding = []
+no_outliers_grad_rate = []
+no_outliers_students = []
+
+outlier_districts = []
+
+for i,r in df.iterrows():
+  funding_per.append(int(r['Cost'])/r['Students'])
+  funding.append(int(r['Cost']))
+  grad_rate.append(r['Graduation Rate'])
+  students.append(r['Students'])
+  if r['Graduation Rate'] > 20:
+    no_outliers_funding_per.append(int(r['Cost'])/r['Students'])
+    no_outliers_funding.append(int(r['Cost']))
+    no_outliers_grad_rate.append(r['Graduation Rate'])
+    no_outliers_students.append(r['Students'])
+  else:
+    outlier_districts.append(r['District'])
+
+#descriptive statistics on graduation rate
+graduation_rate_mean = statistics.mean(no_outliers_grad_rate)
+graduation_rate_med = statistics.median(no_outliers_grad_rate)
+graduation_rate_std = statistics.pstdev(no_outliers_grad_rate)
+graduation_rate_max = max(no_outliers_grad_rate)
+graduation_rate_min = min(no_outliers_grad_rate)
 print(graduation_rate_mean)
 print(graduation_rate_med)
 print(graduation_rate_std)
 print(graduation_rate_max)
 print(graduation_rate_min)
 
-for i in df['Cost']:
-  i = float(i)
+#descriptive statistics on student population
+students_mean = statistics.mean(students)
+students_med = statistics.median(students)
+students_std = statistics.pstdev(students)
+students_max = max(students)
+students_min = min(students)
+print(students_mean)
+print(students_med)
+print(students_std)
+print(students_max)
+print(students_min)
 
-spending_mean = df['Cost'].mean()
-spending_med = df['Cost'].median()
-spending_std = df['Cost'].std()
-spending_max = df['Cost'].max()
-spending_min = df['Cost'].min()
+#school district funding
+spending_mean = statistics.mean(no_outliers_funding)
+spending_med = statistics.median(no_outliers_funding)
+spending_std = statistics.pstdev(no_outliers_funding)
+spending_max = max(no_outliers_funding)
+spending_min = min(no_outliers_funding)
 print('\n')
 print(spending_mean)
 print(spending_med)
@@ -40,23 +76,12 @@ print(spending_std)
 print(spending_max)
 print(spending_min)
 
-
-df['cost_student'] = 0
-count = 0
-for j in df['Students']:
-  if(j == '< 10'):
-    j = float(9)
-  else:
-    j = float(j)
-  df.iloc[count, -1] = df['Cost'][count]/j
-  count+=1
-
-
-spending_stud_mean = df['cost_student'].mean()
-spending_stud_med = df['cost_student'].median()
-spending_stud_std = df['cost_student'].std()
-spending_stud_max = df['cost_student'].max()
-spending_stud_min = df['cost_student'].min()
+#school district funding per student.
+spending_stud_mean = statistics.mean(no_outliers_funding_per)
+spending_stud_med = statistics.median(no_outliers_funding_per)
+spending_stud_std = statistics.pstdev(no_outliers_funding_per)
+spending_stud_max = max(no_outliers_funding_per)
+spending_stud_min = min(no_outliers_funding_per)
 print('\n')
 print(spending_stud_mean)
 print(spending_stud_med)
@@ -64,16 +89,5 @@ print(spending_stud_std)
 print(spending_stud_max)
 print(spending_stud_min)
 
-for i in df_expense[' Current Expense ADA ']:
-  i = float(i)
-spending_student_mean = df_expense[' Current Expense ADA '].mean()
-spending_student_med = df_expense[' Current Expense ADA '].median()
-spending_student_std = df_expense[' Current Expense ADA '].std()
-spending_student_max = df_expense[' Current Expense ADA '].max()
-spending_student_min = df_expense[' Current Expense ADA '].min()
-#print('\n')
-#print(spending_student_mean)
-#print(spending_student_med)
-#print(spending_student_std)
-#print(spending_student_max)
-#print(spending_student_min)
+df = pd.DataFrame(np.array([['graduation rate', graduation_rate_mean, graduation_rate_med,graduation_rate_std,graduation_rate_max,graduation_rate_min],['student population', students_mean, students_med,students_std,students_max,students_min], ['spending', spending_mean, spending_med, spending_std, spending_max, spending_min], ['spending per student', spending_stud_mean, spending_stud_med, spending_stud_std, spending_stud_max, spending_stud_min]]), columns=['question', 'mean', 'median', 'std', 'max', 'min']);
+df.to_csv('statistics.csv')
